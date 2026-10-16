@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f7f4ed">
+<title>ハングル すきま時間レッスン</title>
+<style>
+:root{--bg:#f7f4ed;--card:#fffefa;--ink:#292a31;--muted:#777781;--line:#e5dfd3;--accent:#496caa;--soft:#e8edf7}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN",Meiryo,sans-serif}
+main{max-width:560px;margin:auto;padding:18px 14px 36px}.top{display:flex;justify-content:space-between;align-items:center;gap:10px}.sub{font-size:12px;color:var(--muted)}h1{font-size:22px;margin:5px 0 16px}
+.tabs{display:flex;gap:7px;margin-bottom:13px}.btn{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:12px;padding:11px 10px;font-size:14px;font-weight:600;cursor:pointer}.btn.active{background:var(--accent);color:white;border-color:var(--accent)}.tabs .btn{flex:1}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:15px;margin:12px 0}.between{display:flex;justify-content:space-between;align-items:center;gap:8px}.center{text-align:center}.char{font-size:76px;line-height:1.2;margin:8px 0}.reading{font-size:18px}.tip,.muted{font-size:13px;color:var(--muted);line-height:1.5}.modes{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
+canvas{display:block;width:100%;height:220px;touch-action:none;border-radius:12px;background:#f4f5f8;border:1px solid var(--line)}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.nav{display:flex;gap:8px;margin-top:12px}.nav button{flex:1}.wide{width:100%;margin-top:10px}.choices{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}.choices .btn{font-size:25px}.feedback{font-size:14px;min-height:22px;margin-top:10px;color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+  <div class="top"><div><div class="sub">音声なし・1回1文字から</div><h1>ハングル練習帳 🇰🇷</h1></div><div class="sub" id="progress">1 / 14</div></div>
+  <div class="tabs"><button class="btn active" data-group="vowel">母音</button><button class="btn" data-group="consonant">子音</button><button class="btn" data-group="quiz">ミニクイズ</button></div>
+  <section class="card">
+    <div class="between"><span class="sub" id="category">基本の母音</span><span class="sub" id="step">まずは形を覚えよう</span></div>
+    <div class="center"><div class="char" id="char">ㅏ</div><div class="reading" id="reading">「ア」に近い音</div><div class="tip" id="tip">縦線に短い横線がつく形</div></div>
+    <div class="modes"><button class="btn active" id="trace">お手本をなぞる</button><button class="btn" id="free">自分で書く</button></div>
+    <canvas id="pad" aria-label="指でハングルを書く練習エリア"></canvas>
+    <div class="controls"><button class="btn" id="guide">お手本を表示中</button><button class="btn" id="erase">消す</button></div>
+    <div class="tip" id="note" style="margin-top:8px">薄い文字を見ながら、指でなぞってみましょう。</div>
+    <div class="nav"><button class="btn" id="prev">← 前の文字</button><button class="btn active" id="next">次の文字 →</button></div>
+  </section>
+  <section class="card">
+    <strong>覚えたかな？</strong><p id="question">「ア」に近い音の母音はどれ？</p>
+    <div class="choices" id="choices"></div><div class="feedback" id="feedback">正しいと思う文字を選んでください。</div>
+    <button class="btn wide" id="newquiz">別のクイズ</button>
+  </section>
+  <p class="tip">学習メモ：読み方は日本語での目安です。韓国語の実際の発音と完全に一致するものではありません。練習履歴の保存機能はまだありません。</p>
+</main>
+<script>
+(function(){
+const vowels=[['ㅏ','ア','縦線に短い横線がつく形'],['ㅑ','ヤ','短い横線が2本'],['ㅓ','オに近い音','ㅏと横線の向きが反対'],['ㅕ','ヨに近い音','短い横線が2本、左向き'],['ㅗ','オ','横線の上に縦線'],['ㅛ','ヨ','上向きの短い縦線が2本'],['ㅜ','ウ','横線の下に縦線'],['ㅠ','ユ','下向きの短い縦線が2本'],['ㅡ','ウに近い音','横にまっすぐな線'],['ㅣ','イ','縦にまっすぐな線'],['ㅐ','エに近い音','基本の母音を組み合わせた形'],['ㅔ','エに近い音','ㅓとㅣを組み合わせた形'],['ㅚ','ウェに近い音','母音を組み合わせた形'],['ㅟ','ウィに近い音','母音を組み合わせた形']];
+const consonants=[['ㄱ','ク／グに近い音','角のある形'],['ㄴ','ヌに近い音','横線と縦線の形'],['ㄷ','ト／ドに近い音','四角い枠のような形'],['ㄹ','ルに近い音','折れ曲がった形'],['ㅁ','ムに近い音','四角い形'],['ㅂ','プ／ブに近い音','上下に線がある形'],['ㅅ','スに近い音','山のような形'],['ㅇ','音なし／ン','丸い形'],['ㅈ','チ／ジに近い音','上に短い線がある形'],['ㅊ','チに近い音','上に線が2段ある形'],['ㅋ','クに近い音','ㄱに線が加わった形'],['ㅌ','トに近い音','ㄷに線が加わった形'],['ㅍ','プに近い音','横線が重なった形'],['ㅎ','ハに近い音','丸と横線の形']];
+let group='vowel',index=0,mode='trace',guide=true;const $=id=>document.getElementById(id),canvas=$('pad'),ctx=canvas.getContext('2d');
+function arr(){return group==='consonant'?consonants:vowels}
+function resize(){let r=canvas.getBoundingClientRect(),d= Math.min(devicePixelRatio||1,2);canvas.width=r.width*d;canvas.height=r.height*d;ctx.setTransform(d,0,0,d,0,0);renderPad()}
+function renderPad(){ctx.clearRect(0,0,canvas.clientWidth,canvas.clientHeight);if(guide&&group!=='quiz'){ctx.save();ctx.font='150px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle=mode==='trace'?'rgba(115,125,145,.28)':'rgba(115,125,145,.12)';ctx.fillText(arr()[index][0],canvas.clientWidth/2,canvas.clientHeight/2+3);ctx.restore()}}
+function render(){if(group==='quiz')return;let d=arr()[index];$('char').textContent=d[0];$('reading').textContent='「'+d[1]+'」に近い音';$('tip').textContent=d[2];$('category').textContent=group==='vowel'?'基本の母音':'基本の子音';$('progress').textContent=(index+1)+' / '+arr().length;$('trace').classList.toggle('active',mode==='trace');$('free').classList.toggle('active',mode==='free');$('guide').textContent=guide?'お手本を表示中':'お手本を非表示';$('note').textContent=mode==='trace'?'薄い文字を見ながら、指でなぞってみましょう。':'お手本なしでも、形を思い出して書いてみましょう。';renderPad()}
+function setGroup(g){group=g;document.querySelectorAll('[data-group]').forEach(b=>b.classList.toggle('active',b.dataset.group===g));if(g==='quiz'){makeQuiz();$('category').textContent='ミニクイズ';$('progress').textContent='クイズ';$('char').textContent='?';$('reading').textContent='文字を選んでみよう';$('tip').textContent='正解を選ぶと結果が表示されます';ctx.clearRect(0,0,canvas.clientWidth,canvas.clientHeight);return}index=0;render()}
+function makeQuiz(){let a=Math.random()<.5?vowels:consonants,target=Math.floor(Math.random()*a.length),correct=a[target],opts=[correct[0]],pool=a.filter(x=>x[0]!==correct[0]).map(x=>x[0]);while(opts.length<3)opts.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]);opts.sort(()=>Math.random()-.5);$('question').textContent='「'+correct[1]+'」に近い文字はどれ？';$('choices').innerHTML='';opts.forEach(v=>{let b=document.createElement('button');b.className='btn';b.textContent=v;b.onclick=()=>{$('feedback').textContent=v===correct[0]?'正解です！ よくできました。':'もう一度。正解は '+correct[0]+' です。';$('char').textContent=correct[0];$('reading').textContent='「'+correct[1]+'」に近い音';$('tip').textContent=correct[2]};$('choices').appendChild(b)});$('feedback').textContent='正しいと思う文字を選んでください。'}
+document.querySelectorAll('[data-group]').forEach(b=>b.onclick=()=>setGroup(b.dataset.group));
+$('trace').onclick=()=>{mode='trace';render()};$('free').onclick=()=>{mode='free';render()};$('guide').onclick=()=>{guide=!guide;render()};$('erase').onclick=()=>renderPad();$('prev').onclick=()=>{if(group==='quiz')setGroup('vowel');else{index=(index+arr().length-1)%arr().length;render()}};$('next').onclick=()=>{if(group==='quiz')setGroup('vowel');else{index=(index+1)%arr().length;render()}};$('newquiz').onclick=makeQuiz;
+let drawing=false;function pos(e){let r=canvas.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}}canvas.addEventListener('pointerdown',e=>{e.preventDefault();drawing=true;canvas.setPointerCapture(e.pointerId);let p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y)});canvas.addEventListener('pointermove',e=>{if(!drawing)return;e.preventDefault();let p=pos(e);ctx.strokeStyle='#30333c';ctx.lineWidth=4;ctx.lineCap='round';ctx.lineJoin='round';ctx.lineTo(p.x,p.y);ctx.stroke()});['pointerup','pointercancel','lostpointercapture'].forEach(ev=>canvas.addEventListener(ev,()=>drawing=false));window.addEventListener('resize',resize);resize();render();makeQuiz();
+})();
+</script>
+</body></html>
